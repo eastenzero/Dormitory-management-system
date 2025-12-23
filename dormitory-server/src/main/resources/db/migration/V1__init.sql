@@ -1,0 +1,218 @@
+CREATE TABLE IF NOT EXISTS sys_user (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  username VARCHAR(64) NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  real_name VARCHAR(64) NULL,
+  phone VARCHAR(32) NULL,
+  email VARCHAR(128) NULL,
+  status VARCHAR(16) NOT NULL DEFAULT 'ACTIVE',
+  deleted TINYINT NOT NULL DEFAULT 0,
+  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  created_by BIGINT NULL,
+  updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  updated_by BIGINT NULL,
+  UNIQUE KEY uk_sys_user_username (username)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS sys_role (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  code VARCHAR(64) NOT NULL,
+  name VARCHAR(64) NOT NULL,
+  deleted TINYINT NOT NULL DEFAULT 0,
+  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  created_by BIGINT NULL,
+  updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  updated_by BIGINT NULL,
+  UNIQUE KEY uk_sys_role_code (code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS sys_permission (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  code VARCHAR(128) NOT NULL,
+  name VARCHAR(128) NOT NULL,
+  deleted TINYINT NOT NULL DEFAULT 0,
+  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  created_by BIGINT NULL,
+  updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  updated_by BIGINT NULL,
+  UNIQUE KEY uk_sys_permission_code (code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS sys_user_role (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  user_id BIGINT NOT NULL,
+  role_id BIGINT NOT NULL,
+  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  UNIQUE KEY uk_sys_user_role (user_id, role_id),
+  KEY idx_sys_user_role_user (user_id),
+  KEY idx_sys_user_role_role (role_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS sys_role_permission (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  role_id BIGINT NOT NULL,
+  permission_id BIGINT NOT NULL,
+  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  UNIQUE KEY uk_sys_role_permission (role_id, permission_id),
+  KEY idx_sys_role_permission_role (role_id),
+  KEY idx_sys_role_permission_perm (permission_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS dorm_building (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  code VARCHAR(32) NOT NULL,
+  name VARCHAR(64) NOT NULL,
+  gender_limit VARCHAR(16) NOT NULL DEFAULT 'UNLIMITED',
+  address VARCHAR(255) NULL,
+  status VARCHAR(16) NOT NULL DEFAULT 'ACTIVE',
+  deleted TINYINT NOT NULL DEFAULT 0,
+  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  created_by BIGINT NULL,
+  updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  updated_by BIGINT NULL,
+  UNIQUE KEY uk_dorm_building_code (code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS dorm_room (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  building_id BIGINT NOT NULL,
+  floor_no INT NOT NULL,
+  room_no VARCHAR(32) NOT NULL,
+  room_type VARCHAR(32) NULL,
+  gender_limit VARCHAR(16) NOT NULL DEFAULT 'UNLIMITED',
+  status VARCHAR(16) NOT NULL DEFAULT 'ACTIVE',
+  deleted TINYINT NOT NULL DEFAULT 0,
+  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  created_by BIGINT NULL,
+  updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  updated_by BIGINT NULL,
+  UNIQUE KEY uk_dorm_room (building_id, room_no),
+  KEY idx_dorm_room_building (building_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS dorm_bed (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  room_id BIGINT NOT NULL,
+  bed_no VARCHAR(16) NOT NULL,
+  status VARCHAR(16) NOT NULL DEFAULT 'AVAILABLE',
+  deleted TINYINT NOT NULL DEFAULT 0,
+  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  created_by BIGINT NULL,
+  updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  updated_by BIGINT NULL,
+  UNIQUE KEY uk_dorm_bed (room_id, bed_no),
+  KEY idx_dorm_bed_room (room_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS student (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  student_no VARCHAR(32) NOT NULL,
+  name VARCHAR(64) NOT NULL,
+  gender VARCHAR(16) NOT NULL,
+  college VARCHAR(64) NULL,
+  major VARCHAR(64) NULL,
+  class_name VARCHAR(64) NULL,
+  phone VARCHAR(32) NULL,
+  status VARCHAR(16) NOT NULL DEFAULT 'IN_SCHOOL',
+  deleted TINYINT NOT NULL DEFAULT 0,
+  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  created_by BIGINT NULL,
+  updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  updated_by BIGINT NULL,
+  UNIQUE KEY uk_student_student_no (student_no)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS dorm_assignment (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  student_id BIGINT NOT NULL,
+  bed_id BIGINT NOT NULL,
+  start_at DATETIME(3) NOT NULL,
+  end_at DATETIME(3) NULL,
+  status VARCHAR(16) NOT NULL DEFAULT 'ACTIVE',
+  reason VARCHAR(255) NULL,
+  deleted TINYINT NOT NULL DEFAULT 0,
+  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  created_by BIGINT NULL,
+  updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  updated_by BIGINT NULL,
+  KEY idx_assignment_student_status (student_id, status),
+  KEY idx_assignment_bed (bed_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS repair_order (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  student_id BIGINT NULL,
+  building_id BIGINT NULL,
+  room_id BIGINT NULL,
+  title VARCHAR(128) NOT NULL,
+  description TEXT NULL,
+  priority VARCHAR(16) NOT NULL DEFAULT 'MEDIUM',
+  status VARCHAR(16) NOT NULL DEFAULT 'SUBMITTED',
+  assignee_user_id BIGINT NULL,
+  deleted TINYINT NOT NULL DEFAULT 0,
+  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  created_by BIGINT NULL,
+  updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  updated_by BIGINT NULL,
+  KEY idx_repair_status_assignee (status, assignee_user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS repair_log (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  repair_order_id BIGINT NOT NULL,
+  action VARCHAR(32) NOT NULL,
+  content TEXT NULL,
+  deleted TINYINT NOT NULL DEFAULT 0,
+  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  created_by BIGINT NULL,
+  KEY idx_repair_log_order (repair_order_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS visitor_record (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  student_id BIGINT NULL,
+  visitor_name VARCHAR(64) NOT NULL,
+  id_no VARCHAR(64) NULL,
+  phone VARCHAR(32) NULL,
+  visit_reason VARCHAR(255) NULL,
+  visit_at DATETIME(3) NOT NULL,
+  leave_at DATETIME(3) NULL,
+  status VARCHAR(16) NOT NULL DEFAULT 'IN',
+  deleted TINYINT NOT NULL DEFAULT 0,
+  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  created_by BIGINT NULL,
+  updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  updated_by BIGINT NULL,
+  KEY idx_visitor_student (student_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS notice (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  title VARCHAR(128) NOT NULL,
+  content LONGTEXT NULL,
+  pinned TINYINT NOT NULL DEFAULT 0,
+  publish_status VARCHAR(16) NOT NULL DEFAULT 'DRAFT',
+  publish_at DATETIME(3) NULL,
+  deleted TINYINT NOT NULL DEFAULT 0,
+  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  created_by BIGINT NULL,
+  updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  updated_by BIGINT NULL,
+  KEY idx_notice_status (publish_status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS audit_log (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  action VARCHAR(64) NOT NULL,
+  resource_type VARCHAR(64) NULL,
+  resource_id VARCHAR(64) NULL,
+  operator_user_id BIGINT NULL,
+  operator_username VARCHAR(64) NULL,
+  success TINYINT NOT NULL DEFAULT 1,
+  detail LONGTEXT NULL,
+  ip VARCHAR(64) NULL,
+  user_agent VARCHAR(255) NULL,
+  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  KEY idx_audit_action (action),
+  KEY idx_audit_operator (operator_user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

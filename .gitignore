@@ -1,0 +1,24 @@
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+*.iml
+
+# Logs
+*.log
+logs/
+
+# Node
+**/node_modules/
+**/dist/
+**/.vite/
+**/.env
+**/.env.*
+
+# Java / Maven
+**/target/
+**/*.class
+
+# Misc
+*.tmp
+*.swp
