@@ -127,21 +127,6 @@ JWT 配置（可通过环境变量覆盖）：
 
   ![访客登记](img/09-visitors.png)
 
-## 截图重命名
-
-当前截图位于 `img/` 目录下，建议统一命名，便于 README 引用。
-
-建议命名：
-
-- `01-login.png`
-- `02-dashboard.png`
-- `03-users.png`
-- `04-buildings.png`
-- `05-rooms.png`
-- `06-beds.png`
-- `07-assignments.png`
-- `08-repairs.png`
-- `09-visitors.png`
 
 ## License
 
