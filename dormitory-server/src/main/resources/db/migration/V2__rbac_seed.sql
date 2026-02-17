@@ -58,23 +58,23 @@ CREATE TABLE IF NOT EXISTS sys_role_permission (
   KEY idx_sys_role_permission_perm (permission_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT IGNORE INTO sys_role (code, name) VALUES ('SUPER_ADMIN', '超级管理员');
-INSERT IGNORE INTO sys_permission (code, name) VALUES ('sys:user:read', '查看用户');
+INSERT INTO sys_role (code, name) VALUES ('SUPER_ADMIN', '超级管理员');
+INSERT INTO sys_permission (code, name) VALUES ('sys:user:read', '查看用户');
 
-INSERT IGNORE INTO sys_user (username, password_hash, real_name, status, deleted)
+INSERT INTO sys_user (username, password_hash, real_name, status, deleted)
 VALUES ('admin', '$2a$10$rt8K954aZldXxmuf3AXkgecWvO0Zdmi6FM.uKd.2nJmcoeKVYCOPK', '系统管理员', 'ACTIVE', 0);
 
-INSERT IGNORE INTO sys_user (username, password_hash, real_name, status, deleted)
+INSERT INTO sys_user (username, password_hash, real_name, status, deleted)
 VALUES ('user', '$2a$10$rt8K954aZldXxmuf3AXkgecWvO0Zdmi6FM.uKd.2nJmcoeKVYCOPK', '普通用户', 'ACTIVE', 0);
 
-INSERT IGNORE INTO sys_user_role (user_id, role_id)
+INSERT INTO sys_user_role (user_id, role_id)
 SELECT u.id, r.id
 FROM sys_user u
 JOIN sys_role r
 WHERE u.username = 'admin'
   AND r.code = 'SUPER_ADMIN';
 
-INSERT IGNORE INTO sys_role_permission (role_id, permission_id)
+INSERT INTO sys_role_permission (role_id, permission_id)
 SELECT r.id, p.id
 FROM sys_role r
 JOIN sys_permission p

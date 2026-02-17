@@ -8,42 +8,41 @@
 -- - If you want a smaller dataset, adjust the variables below BEFORE first apply in a fresh DB.
 --
 -- Preset: LARGE (default)
-SET @DEMO_SEED_TAG := 'DEMO_V7';
-SET @DEMO_BUILDING_PREFIX := 'DEMO_B';
-SET @DEMO_BUILDING_COUNT := 10;          -- buildings
-SET @DEMO_FLOORS_PER_BUILDING := 10;      -- floors per building
-SET @DEMO_ROOMS_PER_FLOOR := 30;          -- rooms per floor
-SET @DEMO_STUDENT_COUNT := 4000;          -- students
-SET @DEMO_ACTIVE_ASSIGN_TARGET := 3200;   -- active assignments target
-SET @DEMO_ENDED_ASSIGN_TARGET := 900;     -- ended assignments target
-SET @DEMO_REPAIR_ORDER_COUNT := 1200;     -- repair orders
-SET @DEMO_VISITOR_RECORD_COUNT := 2000;   -- visitor records
-SET @DEMO_NOTICE_COUNT := 80;             -- notices
-SET @DEMO_AUDIT_LOG_COUNT := 800;         -- audit logs
+SET @DEMO_SEED_TAG = 'DEMO_V7';
+SET @DEMO_BUILDING_PREFIX = 'DEMO_B';
+SET @DEMO_BUILDING_COUNT = 10;          -- buildings
+SET @DEMO_FLOORS_PER_BUILDING = 10;      -- floors per building
+SET @DEMO_ROOMS_PER_FLOOR = 30;          -- rooms per floor
+SET @DEMO_STUDENT_COUNT = 4000;          -- students
+SET @DEMO_ACTIVE_ASSIGN_TARGET = 3200;   -- active assignments target
+SET @DEMO_ENDED_ASSIGN_TARGET = 900;     -- ended assignments target
+SET @DEMO_REPAIR_ORDER_COUNT = 1200;     -- repair orders
+SET @DEMO_VISITOR_RECORD_COUNT = 2000;   -- visitor records
+SET @DEMO_NOTICE_COUNT = 80;             -- notices
+SET @DEMO_AUDIT_LOG_COUNT = 800;         -- audit logs
 
 -- Preset: SMALL (example)
--- SET @DEMO_BUILDING_COUNT := 3;
--- SET @DEMO_FLOORS_PER_BUILDING := 6;
--- SET @DEMO_ROOMS_PER_FLOOR := 20;
--- SET @DEMO_STUDENT_COUNT := 800;
--- SET @DEMO_ACTIVE_ASSIGN_TARGET := 500;
--- SET @DEMO_ENDED_ASSIGN_TARGET := 150;
--- SET @DEMO_REPAIR_ORDER_COUNT := 200;
--- SET @DEMO_VISITOR_RECORD_COUNT := 300;
--- SET @DEMO_NOTICE_COUNT := 30;
--- SET @DEMO_AUDIT_LOG_COUNT := 150;
+-- SET @DEMO_BUILDING_COUNT = 3;
+-- SET @DEMO_FLOORS_PER_BUILDING = 6;
+-- SET @DEMO_ROOMS_PER_FLOOR = 20;
+-- SET @DEMO_STUDENT_COUNT = 800;
+-- SET @DEMO_ACTIVE_ASSIGN_TARGET = 500;
+-- SET @DEMO_ENDED_ASSIGN_TARGET = 150;
+-- SET @DEMO_REPAIR_ORDER_COUNT = 200;
+-- SET @DEMO_VISITOR_RECORD_COUNT = 300;
+-- SET @DEMO_NOTICE_COUNT = 30;
+-- SET @DEMO_AUDIT_LOG_COUNT = 150;
 
-SET SESSION cte_max_recursion_depth = 100000;
 
-SET @DEMO_ASSIGN_BASE_START := TIMESTAMP('2025-09-01 08:00:00');
-SET @DEMO_VISIT_BASE := TIMESTAMP('2025-11-01 08:00:00');
-SET @DEMO_REPAIR_BASE := TIMESTAMP('2025-10-01 09:00:00');
-SET @DEMO_NOTICE_BASE := TIMESTAMP('2025-09-15 10:00:00');
+SET @DEMO_ASSIGN_BASE_START = TIMESTAMP '2025-09-01 08:00:00';
+SET @DEMO_VISIT_BASE = TIMESTAMP '2025-11-01 08:00:00';
+SET @DEMO_REPAIR_BASE = TIMESTAMP '2025-10-01 09:00:00';
+SET @DEMO_NOTICE_BASE = TIMESTAMP '2025-09-15 10:00:00';
 
-DROP TEMPORARY TABLE IF EXISTS demo_seq;
+DROP TABLE IF EXISTS demo_seq;
 CREATE TEMPORARY TABLE demo_seq (
   n INT NOT NULL PRIMARY KEY
-) ENGINE=MEMORY;
+) ;
 
 INSERT INTO demo_seq (n)
 SELECT
@@ -77,31 +76,31 @@ WHERE (d1.d + d2.d * 10 + d3.d * 100 + d4.d * 1000 + 1) <= GREATEST(
   @DEMO_ROOMS_PER_FLOOR
 );
 
-DROP TEMPORARY TABLE IF EXISTS demo_bseq;
+DROP TABLE IF EXISTS demo_bseq;
 CREATE TEMPORARY TABLE demo_bseq (
   n INT NOT NULL PRIMARY KEY
-) ENGINE=MEMORY;
+) ;
 INSERT INTO demo_bseq (n)
 SELECT n FROM demo_seq WHERE n <= @DEMO_BUILDING_COUNT;
 
-DROP TEMPORARY TABLE IF EXISTS demo_fseq;
+DROP TABLE IF EXISTS demo_fseq;
 CREATE TEMPORARY TABLE demo_fseq (
   n INT NOT NULL PRIMARY KEY
-) ENGINE=MEMORY;
+) ;
 INSERT INTO demo_fseq (n)
 SELECT n FROM demo_seq WHERE n <= @DEMO_FLOORS_PER_BUILDING;
 
-DROP TEMPORARY TABLE IF EXISTS demo_rseq;
+DROP TABLE IF EXISTS demo_rseq;
 CREATE TEMPORARY TABLE demo_rseq (
   n INT NOT NULL PRIMARY KEY
-) ENGINE=MEMORY;
+) ;
 INSERT INTO demo_rseq (n)
 SELECT n FROM demo_seq WHERE n <= @DEMO_ROOMS_PER_FLOOR;
 
 -- =========================
 -- 1) Buildings
 -- =========================
-INSERT IGNORE INTO dorm_building (code, name, gender_limit, address, status, deleted)
+INSERT INTO dorm_building (code, name, gender_limit, address, status, deleted)
 SELECT
   CONCAT(@DEMO_BUILDING_PREFIX, LPAD(seq.n, 2, '0')) AS code,
   CONCAT('演示-', LPAD(seq.n, 2, '0'), '号楼') AS name,
@@ -119,14 +118,14 @@ WHERE seq.n <= @DEMO_BUILDING_COUNT;
 -- =========================
 -- 2) Rooms
 -- =========================
-INSERT IGNORE INTO dorm_room (building_id, floor_no, room_no, room_type, gender_limit, status, deleted)
+INSERT INTO dorm_room (building_id, floor_no, room_no, room_type, gender_limit, status, deleted)
 SELECT
   b.id AS building_id,
   fseq.n AS floor_no,
   CAST(fseq.n * 100 + rseq.n AS CHAR) AS room_no,
   CASE
-    WHEN MOD(CRC32(CONCAT(@DEMO_SEED_TAG, '_RT_', b.code, '_', fseq.n, '_', rseq.n)), 100) < 70 THEN '4人间'
-    WHEN MOD(CRC32(CONCAT(@DEMO_SEED_TAG, '_RT_', b.code, '_', fseq.n, '_', rseq.n)), 100) < 90 THEN '6人间'
+    WHEN MOD(CAST(RAND()*1000000 AS INT), 100) < 70 THEN '4人间'
+    WHEN MOD(CAST(RAND()*1000000 AS INT), 100) < 90 THEN '6人间'
     ELSE '2人间'
   END AS room_type,
   b.gender_limit AS gender_limit,
@@ -142,7 +141,7 @@ WHERE b.deleted = 0;
 -- =========================
 -- 3) Beds
 -- =========================
-INSERT IGNORE INTO dorm_bed (room_id, bed_no, status, deleted)
+INSERT INTO dorm_bed (room_id, bed_no, status, deleted)
 SELECT
   r.id AS room_id,
   l.bed_no,
@@ -170,7 +169,7 @@ WHERE b.code LIKE CONCAT(@DEMO_BUILDING_PREFIX, '%')
 -- =========================
 -- 4) Students
 -- =========================
-INSERT IGNORE INTO student (student_no, name, gender, college, major, class_name, phone, status, deleted)
+INSERT INTO student (student_no, name, gender, college, major, class_name, phone, status, deleted)
 SELECT
   CONCAT('SDEMO', LPAD(seq.n, 5, '0')) AS student_no,
   CONCAT(
@@ -180,7 +179,7 @@ SELECT
       WHEN 10 THEN '徐' WHEN 11 THEN '孙' WHEN 12 THEN '胡' WHEN 13 THEN '朱' WHEN 14 THEN '高'
       WHEN 15 THEN '林' WHEN 16 THEN '何' WHEN 17 THEN '郭' WHEN 18 THEN '马' ELSE '罗'
     END,
-    CASE MOD(CRC32(CONCAT(@DEMO_SEED_TAG, '_GN_', seq.n)), 30)
+    CASE MOD(CAST(RAND()*1000000 AS INT), 30)
       WHEN 0 THEN '子涵' WHEN 1 THEN '宇轩' WHEN 2 THEN '梓萱' WHEN 3 THEN '浩然' WHEN 4 THEN '欣怡'
       WHEN 5 THEN '思雨' WHEN 6 THEN '明哲' WHEN 7 THEN '俊杰' WHEN 8 THEN '雨桐' WHEN 9 THEN '佳琪'
       WHEN 10 THEN '博文' WHEN 11 THEN '一诺' WHEN 12 THEN '晨曦' WHEN 13 THEN '若曦' WHEN 14 THEN '嘉懿'
@@ -189,7 +188,7 @@ SELECT
       WHEN 25 THEN '亦凡' WHEN 26 THEN '梦琪' WHEN 27 THEN '俊熙' WHEN 28 THEN '紫涵' ELSE '子睿'
     END
   ) AS name,
-  CASE WHEN MOD(CRC32(CONCAT(@DEMO_SEED_TAG, '_G_', seq.n)), 100) < 55 THEN 'MALE' ELSE 'FEMALE' END AS gender,
+  CASE WHEN MOD(CAST(RAND()*1000000 AS INT), 100) < 55 THEN 'MALE' ELSE 'FEMALE' END AS gender,
   CASE MOD(seq.n, 6)
     WHEN 0 THEN '计算机学院'
     WHEN 1 THEN '电子信息学院'
@@ -207,7 +206,7 @@ SELECT
     ELSE CASE MOD(seq.n, 3) WHEN 0 THEN '视觉传达' WHEN 1 THEN '环境设计' ELSE '数字媒体艺术' END
   END AS major,
   CONCAT('20', 22 + MOD(seq.n, 4), '级', LPAD(1 + MOD(seq.n, 8), 2, '0'), '班') AS class_name,
-  CONCAT('13', MOD(seq.n, 10), LPAD(MOD(CRC32(CONCAT(@DEMO_SEED_TAG, '_P_', seq.n)), 100000000), 8, '0')) AS phone,
+  CONCAT('13', MOD(seq.n, 10), LPAD(MOD(CAST(RAND()*1000000 AS INT), 100000000), 8, '0')) AS phone,
   'IN_SCHOOL' AS status,
   0 AS deleted
 FROM (SELECT n FROM demo_seq WHERE n <= @DEMO_STUDENT_COUNT) seq;
@@ -216,9 +215,9 @@ FROM (SELECT n FROM demo_seq WHERE n <= @DEMO_STUDENT_COUNT) seq;
 -- 5) Assignments (ACTIVE)
 -- =========================
 -- Target split across gender-limited buildings.
-SET @DEMO_ACTIVE_MALE_TARGET := FLOOR(@DEMO_ACTIVE_ASSIGN_TARGET * 0.45);
-SET @DEMO_ACTIVE_FEMALE_TARGET := FLOOR(@DEMO_ACTIVE_ASSIGN_TARGET * 0.45);
-SET @DEMO_ACTIVE_UNLIMITED_TARGET := @DEMO_ACTIVE_ASSIGN_TARGET - @DEMO_ACTIVE_MALE_TARGET - @DEMO_ACTIVE_FEMALE_TARGET;
+SET @DEMO_ACTIVE_MALE_TARGET = FLOOR(@DEMO_ACTIVE_ASSIGN_TARGET * 0.45);
+SET @DEMO_ACTIVE_FEMALE_TARGET = FLOOR(@DEMO_ACTIVE_ASSIGN_TARGET * 0.45);
+SET @DEMO_ACTIVE_UNLIMITED_TARGET = @DEMO_ACTIVE_ASSIGN_TARGET - @DEMO_ACTIVE_MALE_TARGET - @DEMO_ACTIVE_FEMALE_TARGET;
 
 -- Male buildings -> male students
 INSERT INTO dorm_assignment (student_id, bed_id, start_at, end_at, status, reason, deleted)
@@ -412,7 +411,7 @@ WHERE bed.deleted = 0
 -- =========================
 -- 8) Repair orders
 -- =========================
-SET @DEMO_ADMIN_ID := (SELECT id FROM sys_user WHERE username = 'admin' AND deleted = 0 ORDER BY id LIMIT 1);
+SET @DEMO_ADMIN_ID = (SELECT id FROM sys_user WHERE username = 'admin' AND deleted = 0 ORDER BY id LIMIT 1);
 
 INSERT INTO repair_order (student_id, building_id, room_id, title, description, priority, status, assignee_user_id, deleted, created_at, updated_at)
 SELECT
@@ -421,7 +420,7 @@ SELECT
   dr.room_id,
   CONCAT(@DEMO_SEED_TAG, '_RO_', LPAD(seq.n, 6, '0')) AS title,
   CONCAT('演示报修：',
-    CASE MOD(CRC32(CONCAT(@DEMO_SEED_TAG, '_RO_D_', seq.n)), 8)
+    CASE MOD(CAST(RAND()*1000000 AS INT), 8)
       WHEN 0 THEN '空调不制冷'
       WHEN 1 THEN '热水器漏水'
       WHEN 2 THEN '灯管闪烁'
@@ -432,7 +431,7 @@ SELECT
       ELSE '网络故障'
     END
   ) AS description,
-  CASE MOD(CRC32(CONCAT(@DEMO_SEED_TAG, '_RO_P_', seq.n)), 100)
+  CASE MOD(CAST(RAND()*1000000 AS INT), 100)
     WHEN 0 THEN 'HIGH'
     WHEN 1 THEN 'HIGH'
     WHEN 2 THEN 'HIGH'
@@ -441,13 +440,13 @@ SELECT
     ELSE 'MEDIUM'
   END AS priority,
   CASE
-    WHEN MOD(CRC32(CONCAT(@DEMO_SEED_TAG, '_RO_S_', seq.n)), 100) < 50 THEN 'SUBMITTED'
-    WHEN MOD(CRC32(CONCAT(@DEMO_SEED_TAG, '_RO_S_', seq.n)), 100) < 75 THEN 'IN_PROGRESS'
-    WHEN MOD(CRC32(CONCAT(@DEMO_SEED_TAG, '_RO_S_', seq.n)), 100) < 95 THEN 'DONE'
+    WHEN MOD(CAST(RAND()*1000000 AS INT), 100) < 50 THEN 'SUBMITTED'
+    WHEN MOD(CAST(RAND()*1000000 AS INT), 100) < 75 THEN 'IN_PROGRESS'
+    WHEN MOD(CAST(RAND()*1000000 AS INT), 100) < 95 THEN 'DONE'
     ELSE 'REJECTED'
   END AS status,
   CASE
-    WHEN MOD(CRC32(CONCAT(@DEMO_SEED_TAG, '_RO_S_', seq.n)), 100) < 50 THEN NULL
+    WHEN MOD(CAST(RAND()*1000000 AS INT), 100) < 50 THEN NULL
     WHEN @DEMO_ADMIN_ID IS NULL THEN NULL
     ELSE @DEMO_ADMIN_ID
   END AS assignee_user_id,
@@ -515,8 +514,8 @@ SELECT
   ds.student_id,
   CONCAT('演示访客', LPAD(seq.n, 5, '0')) AS visitor_name,
   CONCAT(@DEMO_SEED_TAG, '_VID_', LPAD(seq.n, 6, '0')) AS id_no,
-  CONCAT('15', MOD(seq.n, 10), LPAD(MOD(CRC32(CONCAT(@DEMO_SEED_TAG, '_VP_', seq.n)), 100000000), 8, '0')) AS phone,
-  CASE MOD(CRC32(CONCAT(@DEMO_SEED_TAG, '_VR_', seq.n)), 5)
+  CONCAT('15', MOD(seq.n, 10), LPAD(MOD(CAST(RAND()*1000000 AS INT), 100000000), 8, '0')) AS phone,
+  CASE MOD(CAST(RAND()*1000000 AS INT), 5)
     WHEN 0 THEN '探望同学'
     WHEN 1 THEN '送物品'
     WHEN 2 THEN '家长来访'
@@ -525,11 +524,11 @@ SELECT
   END AS visit_reason,
   TIMESTAMPADD(MINUTE, MOD(seq.n * 17, 1440), TIMESTAMPADD(DAY, MOD(seq.n, 60), @DEMO_VISIT_BASE)) AS visit_at,
   CASE
-    WHEN MOD(CRC32(CONCAT(@DEMO_SEED_TAG, '_VS_', seq.n)), 100) < 45 THEN NULL
+    WHEN MOD(CAST(RAND()*1000000 AS INT), 100) < 45 THEN NULL
     ELSE TIMESTAMPADD(MINUTE, 30 + MOD(seq.n * 13, 360), TIMESTAMPADD(MINUTE, MOD(seq.n * 17, 1440), TIMESTAMPADD(DAY, MOD(seq.n, 60), @DEMO_VISIT_BASE)))
   END AS leave_at,
   CASE
-    WHEN MOD(CRC32(CONCAT(@DEMO_SEED_TAG, '_VS_', seq.n)), 100) < 45 THEN 'IN'
+    WHEN MOD(CAST(RAND()*1000000 AS INT), 100) < 45 THEN 'IN'
     ELSE 'OUT'
   END AS status,
   0 AS deleted,
@@ -592,11 +591,11 @@ SELECT
   CAST(seq.n AS CHAR) AS resource_id,
   @DEMO_ADMIN_ID AS operator_user_id,
   'admin' AS operator_username,
-  CASE WHEN MOD(CRC32(CONCAT(@DEMO_SEED_TAG, '_AL_', seq.n)), 100) < 97 THEN 1 ELSE 0 END AS success,
+  CASE WHEN MOD(CAST(RAND()*1000000 AS INT), 100) < 97 THEN 1 ELSE 0 END AS success,
   CONCAT('演示审计日志：', @DEMO_SEED_TAG, ' #', LPAD(seq.n, 5, '0')) AS detail,
   CONCAT('10.0.', MOD(seq.n, 255), '.', MOD(seq.n * 7, 255)) AS ip,
   'demo-seeder/1.0' AS user_agent,
-  TIMESTAMPADD(MINUTE, MOD(seq.n * 11, 1440), TIMESTAMPADD(DAY, MOD(seq.n, 30), TIMESTAMP('2025-12-01 00:00:00'))) AS created_at
+  TIMESTAMPADD(MINUTE, MOD(seq.n * 11, 1440), TIMESTAMPADD(DAY, MOD(seq.n, 30), TIMESTAMP '2025-12-01 00:00:00')) AS created_at
 FROM (SELECT n FROM demo_seq WHERE n <= @DEMO_AUDIT_LOG_COUNT) seq
 WHERE NOT EXISTS (
   SELECT 1 FROM audit_log al

@@ -25,7 +25,8 @@ UPDATE repair_order SET status = 'DONE' WHERE status IN ('RESOLVED', 'CLOSED');
 
 ALTER TABLE repair_order
   ADD CONSTRAINT chk_repair_order_priority
-    CHECK (priority IN ('LOW','MEDIUM','HIGH')),
+    CHECK (priority IN ('LOW','MEDIUM','HIGH'));
+ALTER TABLE repair_order
   ADD CONSTRAINT chk_repair_order_status
     CHECK (status IN ('SUBMITTED','IN_PROGRESS','DONE','REJECTED'));
 
@@ -34,12 +35,12 @@ CREATE INDEX idx_repair_assignee_created_at ON repair_order (assignee_user_id, c
 CREATE INDEX idx_repair_priority ON repair_order (priority);
 CREATE INDEX idx_repair_created_at ON repair_order (created_at);
 
-INSERT IGNORE INTO sys_permission (code, name) VALUES ('repair:order:read', '查看报修工单');
-INSERT IGNORE INTO sys_permission (code, name) VALUES ('repair:order:write', '编辑报修工单');
-INSERT IGNORE INTO sys_permission (code, name) VALUES ('repair:order:assign', '指派报修工单');
-INSERT IGNORE INTO sys_permission (code, name) VALUES ('repair:log:read', '查看报修日志');
+INSERT INTO sys_permission (code, name) VALUES ('repair:order:read', '查看报修工单');
+INSERT INTO sys_permission (code, name) VALUES ('repair:order:write', '编辑报修工单');
+INSERT INTO sys_permission (code, name) VALUES ('repair:order:assign', '指派报修工单');
+INSERT INTO sys_permission (code, name) VALUES ('repair:log:read', '查看报修日志');
 
-INSERT IGNORE INTO sys_role_permission (role_id, permission_id)
+INSERT INTO sys_role_permission (role_id, permission_id)
 SELECT r.id, p.id
 FROM sys_role r
 JOIN sys_permission p

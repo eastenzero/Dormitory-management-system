@@ -4,9 +4,11 @@ ALTER TABLE visitor_record
 
 ALTER TABLE visitor_record
   ADD CONSTRAINT chk_visitor_record_status
-    CHECK (status IN ('IN','OUT')),
+    CHECK (status IN ('IN','OUT'));
+ALTER TABLE visitor_record
   ADD CONSTRAINT chk_visitor_record_leave_at
-    CHECK ((status='IN' AND leave_at IS NULL) OR (status='OUT' AND leave_at IS NOT NULL)),
+    CHECK ((status='IN' AND leave_at IS NULL) OR (status='OUT' AND leave_at IS NOT NULL));
+ALTER TABLE visitor_record
   ADD CONSTRAINT chk_visitor_record_time_order
     CHECK (leave_at IS NULL OR leave_at >= visit_at);
 
@@ -15,10 +17,10 @@ CREATE INDEX idx_visitor_visit_at ON visitor_record (visit_at);
 CREATE INDEX idx_visitor_student_visit_at ON visitor_record (student_id, visit_at);
 CREATE INDEX idx_visitor_name ON visitor_record (visitor_name);
 
-INSERT IGNORE INTO sys_permission (code, name) VALUES ('visitor:record:read', '查看访客登记');
-INSERT IGNORE INTO sys_permission (code, name) VALUES ('visitor:record:write', '登记访客进出');
+INSERT INTO sys_permission (code, name) VALUES ('visitor:record:read', '查看访客登记');
+INSERT INTO sys_permission (code, name) VALUES ('visitor:record:write', '登记访客进出');
 
-INSERT IGNORE INTO sys_role_permission (role_id, permission_id)
+INSERT INTO sys_role_permission (role_id, permission_id)
 SELECT r.id, p.id
 FROM sys_role r
 JOIN sys_permission p
